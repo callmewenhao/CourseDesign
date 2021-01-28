@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "lcd.h"
 #include "menu.h"
-// TODO menu
+
 enum my_enum1{
     UP = 2, //
     DOWN = 3 //
