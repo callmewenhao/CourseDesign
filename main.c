@@ -9,6 +9,7 @@ extern struct date my_date;
 extern struct beep_time my_beep_time;
 
 sbit beep = P2^5;
+
 static uint16_t count_times = 0;
 static short int hour_beep_times = 5;
 
@@ -17,6 +18,7 @@ void Timer0Init(void);		//10毫秒@11.0592MHz
 void UartInit(void);
 void display_now_date(void);
 void change_now_date_time();
+void update_today();
 void tm0_isr() interrupt 1 using 1
 {
 	TL0 = 0x00;		//设置定时初值
@@ -26,6 +28,7 @@ void tm0_isr() interrupt 1 using 1
     } else if(count_times == 800){
         count_times = 0;
         change_now_date_time();
+        update_today();
         //led = !led;
     }
     if(my_beep_time.is_beeping == 0){
@@ -138,8 +141,13 @@ void display_now_date(void){
     sprintf(str, "%02d", my_date.second);
     printf_str(2, 5, str);
     printf_str(2, 6, "秒");
+
+    sprintf(str, "%d", my_date.which_day);
+    printf_str(3, 6, str);
+    printf_str(3, 4, "星期");
     
 }
+
 void change_now_date_time(){
     if(my_date.second < 59){
         my_date.second ++;
@@ -169,4 +177,21 @@ void change_now_date_time(){
     if(my_date.second == 0 && my_date.minute == 0 && my_date.hour == 0 && my_date.day == 1 && my_date.mounth == 1){
         my_date.year ++;
     }
+    
 }
+
+/* 更新周几 使用基姆拉尔森计算公式 Week=(d+2*m+3*(m+1)/5+y+y/4-y/100+y/400)%7 */
+void update_today(){
+    /* 只有00:00:00才会更改 */
+    if(my_date.hour == 0 && my_date.minute == 0 && my_date.second == 0){
+        if(my_date.mounth == 1 || my_date.mounth == 2){
+            my_date.which_day = (my_date.day+2*(my_date.mounth+12)+3*(my_date.mounth+12+1)/5+my_date.year-1+(my_date.year-1)/4-(my_date.year-1)/100+(my_date.year-1)/400+1)%7;
+        } else {
+            my_date.which_day = (my_date.day+2*my_date.mounth+3*(my_date.mounth+1)/5+my_date.year+my_date.year/4-my_date.year/100+my_date.year/400+1)%7;
+        }
+    }
+}
+
+
+
+

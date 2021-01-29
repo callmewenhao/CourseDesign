@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   LCD                                                               12/27/2020 11:45:42 PAGE 1   
+C51 COMPILER V9.59.0.0   LCD                                                               01/30/2021 00:04:30 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE LCD
@@ -62,7 +62,7 @@ line level    source
   52          
   53          void lcd_wdat(uchar dat)
   54          {                          
-C51 COMPILER V9.59.0.0   LCD                                                               12/27/2020 11:45:42 PAGE 2   
+C51 COMPILER V9.59.0.0   LCD                                                               01/30/2021 00:04:30 PAGE 2   
 
   55   1         while(lcd_busy());
   56   1          LCD_RS = 1;
@@ -127,7 +127,7 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    BIT SIZE         =   ----       1
 END OF MODULE INFORMATION.
 
-C51 COMPILER V9.59.0.0   LCD                                                               12/27/2020 11:45:42 PAGE 3   
+C51 COMPILER V9.59.0.0   LCD                                                               01/30/2021 00:04:30 PAGE 3   
 
 
 C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

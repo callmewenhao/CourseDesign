@@ -19,6 +19,8 @@ struct date
 
     uint8_t is_leap_year; /* yes:1, no:0 */
     uint16_t mounth_days;
+
+    uint16_t which_day;
 };
 struct beep_time
 {
