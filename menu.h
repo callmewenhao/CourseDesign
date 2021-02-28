@@ -35,5 +35,6 @@ void set_date(void);
 uint8_t key_scan(bit key);
 void menu_list();
 void beep_time();
+void update_today();
 #endif /* USER_MENU_H_ */
 

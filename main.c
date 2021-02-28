@@ -28,18 +28,23 @@ void tm0_isr() interrupt 1 using 1
     } else if(count_times == 800){
         count_times = 0;
         change_now_date_time();
-        update_today();
+        //update_today();
         //led = !led;
+		 if(my_date.minute == 0 && my_date.second == 0){
+			//整点报时
+			//update_today();
+			if(my_date.which_day == 6)
+			    my_date.which_day = 0;
+			else if(my_date.which_day < 6)
+			    my_date.which_day += 1;
+			my_beep_time.on_the_hour = 1;
+		}
     }
     if(my_beep_time.is_beeping == 0){
         if(my_beep_time.hour == my_date.hour && my_beep_time.minute == my_date.minute && my_date.second == 0 ){
             //定时
             my_beep_time.is_beeping = 1;
         } 
-    }
-    if(my_date.minute == 0 && my_date.second == 0){
-        //整点报时
-        my_beep_time.on_the_hour = 1;
     }
 }  
 
@@ -142,7 +147,7 @@ void display_now_date(void){
     printf_str(2, 5, str);
     printf_str(2, 6, "秒");
 
-    sprintf(str, "%d", my_date.which_day);
+    sprintf(str, "%2d", my_date.which_day);
     printf_str(3, 6, str);
     printf_str(3, 4, "星期");
     
@@ -180,17 +185,6 @@ void change_now_date_time(){
     
 }
 
-/* 更新周几 使用基姆拉尔森计算公式 Week=(d+2*m+3*(m+1)/5+y+y/4-y/100+y/400)%7 */
-void update_today(){
-    /* 只有00:00:00才会更改 */
-    if(my_date.hour == 0 && my_date.minute == 0 && my_date.second == 0){
-        if(my_date.mounth == 1 || my_date.mounth == 2){
-            my_date.which_day = (my_date.day+2*(my_date.mounth+12)+3*(my_date.mounth+12+1)/5+my_date.year-1+(my_date.year-1)/4-(my_date.year-1)/100+(my_date.year-1)/400+1)%7;
-        } else {
-            my_date.which_day = (my_date.day+2*my_date.mounth+3*(my_date.mounth+1)/5+my_date.year+my_date.year/4-my_date.year/100+my_date.year/400+1)%7;
-        }
-    }
-}
 
 
 

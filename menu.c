@@ -19,10 +19,10 @@ struct date my_date = {
 	
     23,
     59,
-    50,
+    53,
 	
     0, // is_leap_year = 1
-    30, // 闰年2月29天
+    31, // 闰年2月29天
 
     5 // 2021-01-29 为周5
 
@@ -170,7 +170,18 @@ void set_date(void){
                 printf_str(star_postion-3, 6, "*");
             }
         }
-        
+        /*  
+            闰年：是4的倍数而不是100的倍数 或是400的倍数
+            闰年2月29天 平年2月28天
+        */
+        if((my_date.year%4 == 0 && my_date.year%100 != 0)|| my_date.year%400 == 0){
+            my_date.is_leap_year = 1;
+        } else {
+            my_date.is_leap_year =0;
+        }
+        /* 对月份进行判断，确定每月的天数 */
+        set_mounth_days();
+
         /* 改年月日 时分秒数值 */
         if (key_scan(value_up) == 0){
             switch (star_postion)
@@ -179,15 +190,6 @@ void set_date(void){
                 case 1:
                     /* year */
                     my_date.year ++;
-                    /*  
-                        闰年：是4的倍数而不是100的倍数 或是400的倍数
-                        闰年2月29天 平年2月28天
-                    */
-                    if((my_date.year%4 == 0 && my_date.year%100 != 0)|| my_date.year%400 == 0){
-                        my_date.is_leap_year = 1;
-                    } else {
-                        my_date.is_leap_year =0;
-                    }
                     break;
                 case 2:
                     /* mounth */
@@ -196,8 +198,6 @@ void set_date(void){
                     } else if(my_date.mounth < 12){
                         my_date.mounth ++;
                     }
-                    /* 对月份进行判断，确定每月的天数 */
-                    set_mounth_days();
                     break;
                 case 3:
                     /* day */
@@ -248,11 +248,6 @@ void set_date(void){
                     else{
                         my_date.year --;
                     }
-                    if((my_date.year%4 == 0 && my_date.year%100 != 0)|| my_date.year%400 == 0){
-                        my_date.is_leap_year = 1;
-                    } else {
-                        my_date.is_leap_year =0;
-                    }
                     break;
                 case 2:
                     if(my_date.mounth == 1){
@@ -261,7 +256,6 @@ void set_date(void){
                     else{
                         my_date.mounth --;
                     }
-                    set_mounth_days();
                     break;
                 case 3:
                     if(my_date.day == 1){
@@ -409,11 +403,24 @@ void menu_list(){
             beep_time();
             lcd_wcmd(0x01);      //清除LCD的显示内容
             //printf_str(0, 2, "当前日期时间");
+			update_today();
     } else if(key_scan(value_up) == 0){
         /* 第二个按键按下时beep停止 */
         my_beep_time.is_beeping = 0;
     }
+    
 }
 
+/* 更新周几 使用基姆拉尔森计算公式 Week=(d+2*m+3*(m+1)/5+y+y/4-y/100+y/400)%7 */
+void update_today(){
+    /*  */
+   
+    if(my_date.mounth == 1 || my_date.mounth == 2){
+        my_date.which_day = (my_date.day+2*(my_date.mounth+12)+3*(my_date.mounth+12+1)/5+my_date.year-1+(my_date.year-1)/4-(my_date.year-1)/100+(my_date.year-1)/400+1)%7;
+    } else {
+        my_date.which_day = (my_date.day+2*my_date.mounth+3*(my_date.mounth+1)/5+my_date.year+my_date.year/4-my_date.year/100+my_date.year/400+1)%7;
+    }
+
+}
 
 

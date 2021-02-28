@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MENU                                                              01/30/2021 00:04:31 PAGE 1   
+C51 COMPILER V9.59.0.0   MENU                                                              02/28/2021 13:50:50 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MENU
@@ -29,10 +29,10 @@ line level    source
   19                  
   20              23,
   21              59,
-  22              50,
+  22              53,
   23                  
   24              0, // is_leap_year = 1
-  25              30, // 闰年2月29天
+  25              31, // 闰年2月29天
   26          
   27              5 // 2021-01-29 为周5
   28          
@@ -62,7 +62,7 @@ line level    source
   52   1          {
   53   2              /* code */
   54   2              delay(80);
-C51 COMPILER V9.59.0.0   MENU                                                              01/30/2021 00:04:31 PAGE 2   
+C51 COMPILER V9.59.0.0   MENU                                                              02/28/2021 13:50:50 PAGE 2   
 
   55   2              if(key == 0)
   56   2                  return 0;
@@ -126,7 +126,7 @@ line level    source
  114   3              } else {
  115   3                  /* 平年 */
  116   3                  my_date.mounth_days = 28;
-C51 COMPILER V9.59.0.0   MENU                                                              01/30/2021 00:04:31 PAGE 3   
+C51 COMPILER V9.59.0.0   MENU                                                              02/28/2021 13:50:50 PAGE 3   
 
  117   3              }
  118   2                  break;
@@ -184,36 +184,36 @@ line level    source
  170   4                      printf_str(star_postion-3, 6, "*");
  171   4                  }
  172   3              }
- 173   2              
- 174   2              /* 改年月日 时分秒数值 */
- 175   2              if (key_scan(value_up) == 0){
- 176   3                  switch (star_postion)
- 177   3                  {
- 178   4                      /* 年月日 */
-C51 COMPILER V9.59.0.0   MENU                                                              01/30/2021 00:04:31 PAGE 4   
+ 173   2              /*  
+ 174   2                  闰年：是4的倍数而不是100的倍数 或是400的倍数
+ 175   2                  闰年2月29天 平年2月28天
+ 176   2              */
+ 177   2              if((my_date.year%4 == 0 && my_date.year%100 != 0)|| my_date.year%400 == 0){
+ 178   3                  my_date.is_leap_year = 1;
+C51 COMPILER V9.59.0.0   MENU                                                              02/28/2021 13:50:50 PAGE 4   
 
- 179   4                      case 1:
- 180   4                          /* year */
- 181   4                          my_date.year ++;
- 182   4                          /*  
- 183   4                              闰年：是4的倍数而不是100的倍数 或是400的倍数
- 184   4                              闰年2月29天 平年2月28天
- 185   4                          */
- 186   4                          if((my_date.year%4 == 0 && my_date.year%100 != 0)|| my_date.year%400 == 0){
- 187   5                              my_date.is_leap_year = 1;
- 188   5                          } else {
- 189   5                              my_date.is_leap_year =0;
- 190   5                          }
- 191   4                          break;
- 192   4                      case 2:
- 193   4                          /* mounth */
- 194   4                          if(my_date.mounth == 12){
- 195   5                              my_date.mounth = 1;
- 196   5                          } else if(my_date.mounth < 12){
- 197   5                              my_date.mounth ++;
- 198   5                          }
- 199   4                          /* 对月份进行判断，确定每月的天数 */
- 200   4                          set_mounth_days();
+ 179   3              } else {
+ 180   3                  my_date.is_leap_year =0;
+ 181   3              }
+ 182   2              /* 对月份进行判断，确定每月的天数 */
+ 183   2              set_mounth_days();
+ 184   2      
+ 185   2              /* 改年月日 时分秒数值 */
+ 186   2              if (key_scan(value_up) == 0){
+ 187   3                  switch (star_postion)
+ 188   3                  {
+ 189   4                      /* 年月日 */
+ 190   4                      case 1:
+ 191   4                          /* year */
+ 192   4                          my_date.year ++;
+ 193   4                          break;
+ 194   4                      case 2:
+ 195   4                          /* mounth */
+ 196   4                          if(my_date.mounth == 12){
+ 197   5                              my_date.mounth = 1;
+ 198   5                          } else if(my_date.mounth < 12){
+ 199   5                              my_date.mounth ++;
+ 200   5                          }
  201   4                          break;
  202   4                      case 3:
  203   4                          /* day */
@@ -254,7 +254,7 @@ line level    source
  238   4                  }
  239   3                  refresh_display();
  240   3              } else if(key_scan(value_down) == 0){
-C51 COMPILER V9.59.0.0   MENU                                                              01/30/2021 00:04:31 PAGE 5   
+C51 COMPILER V9.59.0.0   MENU                                                              02/28/2021 13:50:50 PAGE 5   
 
  241   3                  switch (star_postion)
  242   3                  {
@@ -266,188 +266,197 @@ line level    source
  248   4                          else{
  249   5                              my_date.year --;
  250   5                          }
- 251   4                          if((my_date.year%4 == 0 && my_date.year%100 != 0)|| my_date.year%400 == 0){
- 252   5                              my_date.is_leap_year = 1;
- 253   5                          } else {
- 254   5                              my_date.is_leap_year =0;
+ 251   4                          break;
+ 252   4                      case 2:
+ 253   4                          if(my_date.mounth == 1){
+ 254   5                              my_date.mounth = 12;
  255   5                          }
- 256   4                          break;
- 257   4                      case 2:
- 258   4                          if(my_date.mounth == 1){
- 259   5                              my_date.mounth = 12;
- 260   5                          }
- 261   4                          else{
- 262   5                              my_date.mounth --;
+ 256   4                          else{
+ 257   5                              my_date.mounth --;
+ 258   5                          }
+ 259   4                          break;
+ 260   4                      case 3:
+ 261   4                          if(my_date.day == 1){
+ 262   5                              my_date.day = my_date.mounth_days;
  263   5                          }
- 264   4                          set_mounth_days();
- 265   4                          break;
- 266   4                      case 3:
- 267   4                          if(my_date.day == 1){
- 268   5                              my_date.day = my_date.mounth_days;
- 269   5                          }
- 270   4                          else{
- 271   5                              my_date.day --;
- 272   5                          }
- 273   4                          break;
- 274   4                          /* 时分秒 */
- 275   4                      case 4:
- 276   4                          /* hour */
- 277   4                          if(my_date.hour > 0){
- 278   5                              my_date.hour --;
- 279   5                          } else if(my_date.hour == 0){
- 280   5                              my_date.hour = 23;
+ 264   4                          else{
+ 265   5                              my_date.day --;
+ 266   5                          }
+ 267   4                          break;
+ 268   4                          /* 时分秒 */
+ 269   4                      case 4:
+ 270   4                          /* hour */
+ 271   4                          if(my_date.hour > 0){
+ 272   5                              my_date.hour --;
+ 273   5                          } else if(my_date.hour == 0){
+ 274   5                              my_date.hour = 23;
+ 275   5                          }
+ 276   4                          break;
+ 277   4                      case 5:
+ 278   4                          /* minute */
+ 279   4                          if(my_date.minute > 0){
+ 280   5                              my_date.minute --;
  281   5                          }
- 282   4                          break;
- 283   4                      case 5:
- 284   4                          /* minute */
- 285   4                          if(my_date.minute > 0){
- 286   5                              my_date.minute --;
- 287   5                          }
- 288   4                          else if(my_date.minute == 0){
- 289   5                              my_date.minute = 59;
- 290   5                          } 
- 291   4                          break;
- 292   4                      case 6:
- 293   4                          /* second */
- 294   4                          if(my_date.second > 0){
- 295   5                              my_date.second --;
- 296   5                          } else if(my_date.second == 0){
- 297   5                              my_date.second = 59;
- 298   5                          }
- 299   4                          break;
- 300   4                      default:
- 301   4                          break;
- 302   4                  }
-C51 COMPILER V9.59.0.0   MENU                                                              01/30/2021 00:04:31 PAGE 6   
+ 282   4                          else if(my_date.minute == 0){
+ 283   5                              my_date.minute = 59;
+ 284   5                          } 
+ 285   4                          break;
+ 286   4                      case 6:
+ 287   4                          /* second */
+ 288   4                          if(my_date.second > 0){
+ 289   5                              my_date.second --;
+ 290   5                          } else if(my_date.second == 0){
+ 291   5                              my_date.second = 59;
+ 292   5                          }
+ 293   4                          break;
+ 294   4                      default:
+ 295   4                          break;
+ 296   4                  }
+ 297   3                  refresh_display();
+ 298   3              }
+ 299   2             if (key_scan(key_break) == 0){
+ 300   3                 break;
+ 301   3             }
+ 302   2          }
+C51 COMPILER V9.59.0.0   MENU                                                              02/28/2021 13:50:50 PAGE 6   
 
- 303   3                  refresh_display();
- 304   3              }
- 305   2             if (key_scan(key_break) == 0){
- 306   3                 break;
- 307   3             }
- 308   2          }
- 309   1              // ET0 = 1; //enable timer1 interrupt
- 310   1          // EA = 1; //open global interrupt switch
- 311   1      }
- 312          void beep_time(){
- 313   1          printf_str(0, 0, "定时设置");
- 314   1          
- 315   1          printf_str(1, 2, "时");
- 316   1          sprintf(str, "%02d", my_beep_time.hour);
- 317   1          printf_str(1, 5, str);
- 318   1          printf_str(2, 2, "分");
- 319   1          sprintf(str, "%02d", my_beep_time.minute);
- 320   1          printf_str(2, 5, str);
- 321   1              
- 322   1              star_postion = 1;
- 323   1          printf_str(star_postion, 6, "*");
- 324   1          while (1)
- 325   1          {
- 326   2              /* code */
- 327   2                      /* 改star * 的位置 */
- 328   2              if (key_scan(key_star) == 0){
- 329   3                  printf_str(star_postion, 6, " ");
- 330   3                  if (star_postion == 1)
- 331   3                      star_postion ++;
- 332   3                              else if (star_postion == 2)
- 333   3                      star_postion = 1;
- 334   3                  printf_str(star_postion, 6, "*");
- 335   3              }
- 336   2              /* 改值 */
- 337   2              if (key_scan(value_up) == 0){
- 338   3                  switch (star_postion)
- 339   3                  {
- 340   4                      case 1:
- 341   4                          /* hour */
- 342   4                          if(my_beep_time.hour == 23){
- 343   5                              my_beep_time.hour = 0;
- 344   5                          } else if(my_beep_time.hour < 23){
- 345   5                              my_beep_time.hour ++;
- 346   5                          }
- 347   4                          break;
- 348   4                      case 2:
- 349   4                      /* minute */
- 350   4                          if(my_beep_time.minute == 59){
- 351   5                              my_beep_time.minute = 0;
- 352   5                          } else if(my_beep_time.minute < 59){
- 353   5                              my_beep_time.minute ++;
- 354   5                          }
- 355   4                          break;
- 356   4                      default:
- 357   4                          break;
- 358   4                  }
- 359   3                  /*  */
- 360   3                  sprintf(str, "%02d", my_beep_time.hour);
- 361   3                  printf_str(1, 5, str);
- 362   3                  sprintf(str, "%02d", my_beep_time.minute);
- 363   3                  printf_str(2, 5, str);
- 364   3              } else if(key_scan(value_down) == 0) {
-C51 COMPILER V9.59.0.0   MENU                                                              01/30/2021 00:04:31 PAGE 7   
+ 303   1              // ET0 = 1; //enable timer1 interrupt
+ 304   1          // EA = 1; //open global interrupt switch
+ 305   1      }
+ 306          void beep_time(){
+ 307   1          printf_str(0, 0, "定时设置");
+ 308   1          
+ 309   1          printf_str(1, 2, "时");
+ 310   1          sprintf(str, "%02d", my_beep_time.hour);
+ 311   1          printf_str(1, 5, str);
+ 312   1          printf_str(2, 2, "分");
+ 313   1          sprintf(str, "%02d", my_beep_time.minute);
+ 314   1          printf_str(2, 5, str);
+ 315   1              
+ 316   1              star_postion = 1;
+ 317   1          printf_str(star_postion, 6, "*");
+ 318   1          while (1)
+ 319   1          {
+ 320   2              /* code */
+ 321   2                      /* 改star * 的位置 */
+ 322   2              if (key_scan(key_star) == 0){
+ 323   3                  printf_str(star_postion, 6, " ");
+ 324   3                  if (star_postion == 1)
+ 325   3                      star_postion ++;
+ 326   3                              else if (star_postion == 2)
+ 327   3                      star_postion = 1;
+ 328   3                  printf_str(star_postion, 6, "*");
+ 329   3              }
+ 330   2              /* 改值 */
+ 331   2              if (key_scan(value_up) == 0){
+ 332   3                  switch (star_postion)
+ 333   3                  {
+ 334   4                      case 1:
+ 335   4                          /* hour */
+ 336   4                          if(my_beep_time.hour == 23){
+ 337   5                              my_beep_time.hour = 0;
+ 338   5                          } else if(my_beep_time.hour < 23){
+ 339   5                              my_beep_time.hour ++;
+ 340   5                          }
+ 341   4                          break;
+ 342   4                      case 2:
+ 343   4                      /* minute */
+ 344   4                          if(my_beep_time.minute == 59){
+ 345   5                              my_beep_time.minute = 0;
+ 346   5                          } else if(my_beep_time.minute < 59){
+ 347   5                              my_beep_time.minute ++;
+ 348   5                          }
+ 349   4                          break;
+ 350   4                      default:
+ 351   4                          break;
+ 352   4                  }
+ 353   3                  /*  */
+ 354   3                  sprintf(str, "%02d", my_beep_time.hour);
+ 355   3                  printf_str(1, 5, str);
+ 356   3                  sprintf(str, "%02d", my_beep_time.minute);
+ 357   3                  printf_str(2, 5, str);
+ 358   3              } else if(key_scan(value_down) == 0) {
+ 359   3                  switch (star_postion)
+ 360   3                  {
+ 361   4                      case 1:
+ 362   4                          if(my_beep_time.hour > 0){
+ 363   5                              my_beep_time.hour --;
+ 364   5                          } else if(my_beep_time.hour == 0){
+C51 COMPILER V9.59.0.0   MENU                                                              02/28/2021 13:50:50 PAGE 7   
 
- 365   3                  switch (star_postion)
- 366   3                  {
- 367   4                      case 1:
- 368   4                          if(my_beep_time.hour > 0){
- 369   5                              my_beep_time.hour --;
- 370   5                          } else if(my_beep_time.hour == 0){
- 371   5                              my_beep_time.hour = 23;
+ 365   5                              my_beep_time.hour = 23;
+ 366   5                          }
+ 367   4                          break;
+ 368   4                      case 2:
+ 369   4                          /* minute */
+ 370   4                          if(my_beep_time.minute > 0){
+ 371   5                              my_beep_time.minute --;
  372   5                          }
- 373   4                          break;
- 374   4                      case 2:
- 375   4                          /* minute */
- 376   4                          if(my_beep_time.minute > 0){
- 377   5                              my_beep_time.minute --;
- 378   5                          }
- 379   4                          else if(my_beep_time.minute == 0){
- 380   5                              my_beep_time.minute = 59;
- 381   5                          } 
- 382   4                          break;
- 383   4                      default:
- 384   4                          break;
- 385   4                  }
- 386   3                  /*  */
- 387   3                  sprintf(str, "%02d", my_beep_time.hour);
- 388   3                  printf_str(1, 5, str);
- 389   3                  sprintf(str, "%02d", my_beep_time.minute);
- 390   3                  printf_str(2, 5, str);
- 391   3              }
- 392   2              if (key_scan(key_break) == 0){
- 393   3                 break;
- 394   3             }
- 395   2          }
- 396   1              ET0 = 1; //enable timer1 interrupt
- 397   1          EA = 1; //open global interrupt switch
- 398   1      }
- 399          void menu_list(){
- 400   1          if(key_scan(key_break) == 0){
- 401   2                  ET0 = 0;        //enable timer1 interrupt
- 402   2                              EA = 0;          //open global interrupt switch
- 403   2                              lcd_wcmd(0x01);      //清除LCD的显示内容
- 404   2                  set_date();
- 405   2                              lcd_wcmd(0x01);      //清除LCD的显示内容
- 406   2                  
- 407   2                  /* 定时函数 */
- 408   2                  lcd_wcmd(0x01);      //清除LCD的显示内容
- 409   2                  beep_time();
- 410   2                  lcd_wcmd(0x01);      //清除LCD的显示内容
- 411   2                  //printf_str(0, 2, "当前日期时间");
- 412   2          } else if(key_scan(value_up) == 0){
- 413   2              /* 第二个按键按下时beep停止 */
- 414   2              my_beep_time.is_beeping = 0;
- 415   2          }
- 416   1      }
- 417          
- 418          
- 419          
+ 373   4                          else if(my_beep_time.minute == 0){
+ 374   5                              my_beep_time.minute = 59;
+ 375   5                          } 
+ 376   4                          break;
+ 377   4                      default:
+ 378   4                          break;
+ 379   4                  }
+ 380   3                  /*  */
+ 381   3                  sprintf(str, "%02d", my_beep_time.hour);
+ 382   3                  printf_str(1, 5, str);
+ 383   3                  sprintf(str, "%02d", my_beep_time.minute);
+ 384   3                  printf_str(2, 5, str);
+ 385   3              }
+ 386   2              if (key_scan(key_break) == 0){
+ 387   3                 break;
+ 388   3             }
+ 389   2          }
+ 390   1              ET0 = 1; //enable timer1 interrupt
+ 391   1          EA = 1; //open global interrupt switch
+ 392   1      }
+ 393          void menu_list(){
+ 394   1          if(key_scan(key_break) == 0){
+ 395   2                  ET0 = 0;        //enable timer1 interrupt
+ 396   2                              EA = 0;          //open global interrupt switch
+ 397   2                              lcd_wcmd(0x01);      //清除LCD的显示内容
+ 398   2                  set_date();
+ 399   2                              lcd_wcmd(0x01);      //清除LCD的显示内容
+ 400   2                  
+ 401   2                  /* 定时函数 */
+ 402   2                  lcd_wcmd(0x01);      //清除LCD的显示内容
+ 403   2                  beep_time();
+ 404   2                  lcd_wcmd(0x01);      //清除LCD的显示内容
+ 405   2                  //printf_str(0, 2, "当前日期时间");
+ 406   2                              update_today();
+ 407   2          } else if(key_scan(value_up) == 0){
+ 408   2              /* 第二个按键按下时beep停止 */
+ 409   2              my_beep_time.is_beeping = 0;
+ 410   2          }
+ 411   1          
+ 412   1      }
+ 413          
+ 414          /* 更新周几 使用基姆拉尔森计算公式 Week=(d+2*m+3*(m+1)/5+y+y/4-y/100+y/400)%7 */
+ 415          void update_today(){
+ 416   1          /*  */
+ 417   1         
+ 418   1          if(my_date.mounth == 1 || my_date.mounth == 2){
+ 419   2              my_date.which_day = (my_date.day+2*(my_date.mounth+12)+3*(my_date.mounth+12+1)/5+my_date.year-1+(m
+             -y_date.year-1)/4-(my_date.year-1)/100+(my_date.year-1)/400+1)%7;
+ 420   2          } else {
+ 421   2              my_date.which_day = (my_date.day+2*my_date.mounth+3*(my_date.mounth+1)/5+my_date.year+my_date.year
+             -/4-my_date.year/100+my_date.year/400+1)%7;
+ 422   2          }
+ 423   1      
+ 424   1      }
+C51 COMPILER V9.59.0.0   MENU                                                              02/28/2021 13:50:50 PAGE 8   
+
+ 425          
+ 426          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   1897    ----
+   CODE SIZE        =   2128    ----
    CONSTANT SIZE    =     50    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
-C51 COMPILER V9.59.0.0   MENU                                                              01/30/2021 00:04:31 PAGE 8   
-
    DATA SIZE        =     34    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----       1
