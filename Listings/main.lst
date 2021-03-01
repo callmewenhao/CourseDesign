@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MAIN                                                              02/28/2021 13:54:42 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              03/01/2021 22:52:20 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
@@ -15,206 +15,200 @@ line level    source
    5          #define uint8_t unsigned char
    6          #define uint16_t unsigned int 
    7          
-   8          extern struct date my_date;
-   9          extern struct beep_time my_beep_time;
-  10          
-  11          sbit beep = P2^5;
-  12          
-  13          static uint16_t count_times = 0;
-  14          static short int hour_beep_times = 5;
-  15          
-  16          void delay_ms(uint16_t time_ms);
-  17          void Timer0Init(void);          //10毫秒@11.0592MHz
-  18          void UartInit(void);
-  19          void display_now_date(void);
-  20          void change_now_date_time();
-  21          void update_today();
-  22          void tm0_isr() interrupt 1 using 1
-  23          {
-  24   1              TL0 = 0x00;             //设置定时初值
-  25   1              TH0 = 0xDC;             //设置定时初值
-  26   1          if(count_times < 800){
-  27   2              count_times ++;
-  28   2          } else if(count_times == 800){
-  29   2              count_times = 0;
-  30   2              change_now_date_time();
-  31   2              //update_today();
-  32   2              //led = !led;
-  33   2                       if(my_date.minute == 0 && my_date.second == 0){
-  34   3                              //整点报时
-  35   3                              //update_today();
-  36   3                              if(my_date.which_day == 6)
-  37   3                                  my_date.which_day = 0;
-  38   3                              else if(my_date.which_day < 6)
-  39   3                                  my_date.which_day += 1;
-  40   3                              my_beep_time.on_the_hour = 1;
-  41   3                      }
-  42   2          }
-  43   1          if(my_beep_time.is_beeping == 0){
-  44   2              if(my_beep_time.hour == my_date.hour && my_beep_time.minute == my_date.minute && my_date.second ==
-             - 0 ){
-  45   3                  //定时
-  46   3                  my_beep_time.is_beeping = 1;
-  47   3              } 
-  48   2          }
-  49   1      }  
-  50          
-  51          void main()
-  52          {
-  53   1          beep = 1;
-C51 COMPILER V9.59.0.0   MAIN                                                              02/28/2021 13:54:42 PAGE 2   
+   8          /* Declare external variables */
+   9          extern struct date my_date;
+  10          extern struct beep_time my_beep_time;
+  11          
+  12          /* BEEP bit*/
+  13          sbit beep = P2^5;
+  14          
+  15          /* Global variable */
+  16          static uint16_t count_times = 0; // count times for 1 sec
+  17          static short int hour_beep_times = 5; // 整点报时相关
+  18          
+  19          void delay_ms(uint16_t time_ms);
+  20          void Timer1Init(void);
+  21          void UartInit(void);
+  22          void display_now_date(void);
+  23          void change_now_date_time(void);
+  24          void update_today(void);
+  25          
+  26          void tm1_interrupt() interrupt 3
+  27          {
+  28   1              TH1 = 0xdc; // 设置定时初值
+  29   1          TL1 = 0x00;
+  30   1      
+  31   1          if(count_times < 100){
+  32   2              count_times ++;
+  33   2          } else if(count_times == 100){
+  34   2              count_times = 0;
+  35   2              change_now_date_time(); // 时钟功能
+  36   2                       if(my_date.minute == 0 && my_date.second == 0){
+  37   3                              // 整点修改星期数
+  38   3                              if(my_date.which_day == 6)
+  39   3                                  my_date.which_day = 0;
+  40   3                              else if(my_date.which_day < 6)
+  41   3                                  my_date.which_day += 1;
+  42   3                  // 整点报时
+  43   3                              my_beep_time.on_the_hour = 1;
+  44   3                      }
+  45   2              if(my_beep_time.is_beeping == 0){
+  46   3                  if(my_beep_time.hour == my_date.hour && my_beep_time.minute == my_date.minute && my_date.secon
+             -d == 0 ){
+  47   4                      //定时报时检测
+  48   4                      my_beep_time.is_beeping = 1;
+  49   4                  } 
+  50   3              }
+  51   2          }
+  52   1      }  
+  53          
+C51 COMPILER V9.59.0.0   MAIN                                                              03/01/2021 22:52:20 PAGE 2   
 
-  54   1          key_init();
-  55   1          lcd_init();
-  56   1              //UartInit();
-  57   1          Timer0Init();
-  58   1              printf_str(1, 2, "Welcome!");
-  59   1              delay(300);
-  60   1          lcd_wcmd(0x01); //清除LCD的显示内容
-  61   1              
-  62   1              ET0 = 1; //enable timer1 interrupt
-  63   1          EA = 1; //open global interrupt switch
-  64   1      
-  65   1              //printf_str(0, 2, "当前日期时间");
-  66   1          while(1)
-  67   1          {
-  68   2              /* 检测是否跳到其他界面 */
-  69   2              menu_list();
-  70   2                      if(count_times == 0){
-  71   3                  /* 如果日期时间有变就刷新显示， 显示效果更好 */
-  72   3                              display_now_date();
-  73   3                              if(my_beep_time.is_beeping == 0){
-  74   4                                      /* 不响 */
-  75   4                                      beep = 1;
-  76   4                                      //printf_str(3, 2, "         ");
-  77   4                              } else if(my_beep_time.is_beeping == 1){
-  78   4                                      /* 响 */
-  79   4                                      beep = 0;
-  80   4                                      //printf_str(3, 2, "wake up!");
-  81   4                              } 
-  82   3                  /* 整点报时 */
-  83   3                  
-  84   3                  if(my_beep_time.on_the_hour == 1){
-  85   4                      if(hour_beep_times%2 == 1){
-  86   5                          beep = 1;
-  87   5                          hour_beep_times --;
-  88   5                      } else if(hour_beep_times == 0){
-  89   5                          my_beep_time.on_the_hour = 0;
-  90   5                          hour_beep_times = 4;
-  91   5      
-  92   5                      } else if(hour_beep_times%2 == 0){
-  93   5                          beep = 0;
-  94   5                          hour_beep_times --;
-  95   5                      } 
-  96   4                  }
-  97   3                      }
-  98   2          }
-  99   1      }
- 100          void Uart0Init(void)
- 101          {
- 102   1          TH1 = 0xFD;  //晶振11.0592mhz 波特率设为9600
- 103   1          TL1 = TH1;
- 104   1          TMOD |= 0x20; //定时器1方式2
- 105   1          SCON = 0x50; //串口接收使能
- 106   1          ES = 1;     //串口中断使能
- 107   1          TR1 = 1; //定时器1使能
- 108   1          TI = 1; //发送中断标记位，必须设置
- 109   1      }
- 110          void Timer0Init(void)           //10毫秒@11.0592MHz
- 111          {
- 112   1      //      AUXR &= 0xBF;           //定时器时钟12T模式
- 113   1              TMOD &= 0xF0;           //设置定时器模式
- 114   1              TL0 = 0x00;             //设置定时初值
- 115   1              TH0 = 0xDC;             //设置定时初值
-C51 COMPILER V9.59.0.0   MAIN                                                              02/28/2021 13:54:42 PAGE 3   
+  54          void main()
+  55          {
+  56   1          beep = 1;
+  57   1          key_init();
+  58   1          lcd_init();
+  59   1          Timer1Init();
+  60   1              printf_str(1, 2, "Welcome!");
+  61   1              delay(300);
+  62   1          lcd_wcmd(0x01); //清除LCD的显示内容
+  63   1              
+  64   1              ET1 = 1; //enable timer1 interrupt
+  65   1          EA = 1; //open global interrupt switch
+  66   1      
+  67   1          while(1)
+  68   1          {
+  69   2              /* 检测是否跳到菜单界面 */
+  70   2              menu_list();
+  71   2                      if(count_times == 0){
+  72   3                  /* 如果日期时间有变就刷新显示， 显示效果更好 */
+  73   3                              display_now_date(); 
+  74   3      
+  75   3                  /* 定时报时响 */
+  76   3                              if(my_beep_time.is_beeping == 0){
+  77   4                                      /* 不响 */
+  78   4                                      beep = 1;
+  79   4                                      //printf_str(3, 2, "         ");
+  80   4                              } else if(my_beep_time.is_beeping == 1){
+  81   4                                      /* 响 */
+  82   4                                      beep = 0;
+  83   4                                      //printf_str(3, 2, "wake up!");
+  84   4                              } 
+  85   3      
+  86   3                  /* 整点报时响 */
+  87   3                  if(my_beep_time.on_the_hour == 1){
+  88   4                      if(hour_beep_times%2 == 1){
+  89   5                          beep = 1;
+  90   5                          hour_beep_times --;
+  91   5                      } else if(hour_beep_times == 0){
+  92   5                          /* 停止响 */
+  93   5                          my_beep_time.on_the_hour = 0;
+  94   5                          hour_beep_times = 4;
+  95   5      
+  96   5                      } else if(hour_beep_times%2 == 0){
+  97   5                          beep = 0;
+  98   5                          hour_beep_times --;
+  99   5                      } 
+ 100   4                  }
+ 101   3                      }
+ 102   2          }
+ 103   1      }
+ 104          /* Timer1Init */
+ 105          void Timer1Init(void){
+ 106   1          TMOD = 0x10; // Timer1十六位计数方式
+ 107   1      
+ 108   1          TH1 = 0xdc; // 设置定时初值
+ 109   1          TL1 = 0x00;
+ 110   1      
+ 111   1          TR1 = 1; // 启动定时器
+ 112   1          // ET1 = 1;
+ 113   1              // EA = 1;
+ 114   1      
+ 115   1      }
+C51 COMPILER V9.59.0.0   MAIN                                                              03/01/2021 22:52:20 PAGE 3   
 
- 116   1              TF0 = 0;                //清除TF1标志
- 117   1              TR0 = 1;                //定时器1开始计时
- 118   1      //      ET1 = 1;        //enable timer1 interrupt
- 119   1      //    EA = 1;          //open global interrupt switch
- 120   1      }
- 121          void display_now_date(void){
- 122   1              char str[10] =" ";
- 123   1          printf_str(0, 0, "当前日期时间");
- 124   1      
- 125   1          sprintf(str, "%04d", my_date.year);
- 126   1          printf_str(1, 0, str);
- 127   1          printf_str(1, 2, "年");
- 128   1          
- 129   1          sprintf(str, "%02d", my_date.mounth);
- 130   1          printf_str(1, 3, str);
- 131   1          printf_str(1, 4, "月");
- 132   1      
- 133   1          sprintf(str, "%02d", my_date.day);
- 134   1          printf_str(1, 5, str);
- 135   1              printf_str(1, 6, "日");
- 136   1      
- 137   1          sprintf(str, "%02d", my_date.hour);
- 138   1          printf_str(2, 1, str);
- 139   1          printf_str(2, 2, "时");
- 140   1          
- 141   1          
- 142   1          sprintf(str, "%02d", my_date.minute);
- 143   1          printf_str(2, 3, str);
- 144   1          printf_str(2, 4, "分");
- 145   1      
- 146   1          sprintf(str, "%02d", my_date.second);
- 147   1          printf_str(2, 5, str);
- 148   1          printf_str(2, 6, "秒");
- 149   1      
- 150   1          sprintf(str, "%2d", my_date.which_day);
- 151   1          printf_str(3, 6, str);
- 152   1          printf_str(3, 4, "星期");
- 153   1          
- 154   1      }
- 155          
- 156          void change_now_date_time(){
- 157   1          if(my_date.second < 59){
- 158   2              my_date.second ++;
- 159   2          } else if(my_date.second == 59) {
- 160   2              my_date.second = 0;
- 161   2          }
- 162   1          if(my_date.second == 0 && my_date.minute < 59){
- 163   2              my_date.minute ++;
- 164   2          } else if(my_date.second == 0 && my_date.minute == 59){
- 165   2              my_date.minute = 0;
- 166   2          }
- 167   1          if(my_date.second == 0 && my_date.minute == 0 && my_date.hour < 23){
- 168   2              my_date.hour ++;
- 169   2          } else if(my_date.second == 0 && my_date.minute == 0 && my_date.hour == 23){
- 170   2              my_date.hour = 0;
- 171   2          }
- 172   1          if(my_date.second == 0 && my_date.minute == 0 && my_date.hour == 0 && my_date.day < my_date.mounth_day
+ 116          void display_now_date(void){
+ 117   1              char str[10] =" ";
+ 118   1          printf_str(0, 0, "当前日期时间");
+ 119   1      
+ 120   1          sprintf(str, "%04d", my_date.year);
+ 121   1          printf_str(1, 0, str);
+ 122   1          printf_str(1, 2, "年");
+ 123   1          
+ 124   1          sprintf(str, "%02d", my_date.mounth);
+ 125   1          printf_str(1, 3, str);
+ 126   1          printf_str(1, 4, "月");
+ 127   1      
+ 128   1          sprintf(str, "%02d", my_date.day);
+ 129   1          printf_str(1, 5, str);
+ 130   1              printf_str(1, 6, "日");
+ 131   1      
+ 132   1          sprintf(str, "%02d", my_date.hour);
+ 133   1          printf_str(2, 1, str);
+ 134   1          printf_str(2, 2, "时");
+ 135   1          
+ 136   1          
+ 137   1          sprintf(str, "%02d", my_date.minute);
+ 138   1          printf_str(2, 3, str);
+ 139   1          printf_str(2, 4, "分");
+ 140   1      
+ 141   1          sprintf(str, "%02d", my_date.second);
+ 142   1          printf_str(2, 5, str);
+ 143   1          printf_str(2, 6, "秒");
+ 144   1      
+ 145   1          sprintf(str, "%2d", my_date.which_day);
+ 146   1          printf_str(3, 6, str);
+ 147   1          printf_str(3, 4, "星期");
+ 148   1          
+ 149   1      }
+ 150          void change_now_date_time(){
+ 151   1          if(my_date.second < 59){
+ 152   2              my_date.second ++;
+ 153   2          } else if(my_date.second == 59) {
+ 154   2              my_date.second = 0;
+ 155   2          }
+ 156   1          if(my_date.second == 0 && my_date.minute < 59){
+ 157   2              my_date.minute ++;
+ 158   2          } else if(my_date.second == 0 && my_date.minute == 59){
+ 159   2              my_date.minute = 0;
+ 160   2          }
+ 161   1          if(my_date.second == 0 && my_date.minute == 0 && my_date.hour < 23){
+ 162   2              my_date.hour ++;
+ 163   2          } else if(my_date.second == 0 && my_date.minute == 0 && my_date.hour == 23){
+ 164   2              my_date.hour = 0;
+ 165   2          }
+ 166   1          if(my_date.second == 0 && my_date.minute == 0 && my_date.hour == 0 && my_date.day < my_date.mounth_day
              -s){
- 173   2              my_date.day ++;
- 174   2          } else if(my_date.second == 0 && my_date.minute == 0 && my_date.hour == 0 && my_date.day == my_date.mo
+ 167   2              my_date.day ++;
+ 168   2          } else if(my_date.second == 0 && my_date.minute == 0 && my_date.hour == 0 && my_date.day == my_date.mo
              -unth_days){
- 175   2              my_date.day = 1;
-C51 COMPILER V9.59.0.0   MAIN                                                              02/28/2021 13:54:42 PAGE 4   
-
- 176   2          }
- 177   1          if(my_date.second == 0 && my_date.minute == 0 && my_date.hour == 0 && my_date.day == 1 && my_date.moun
+ 169   2              my_date.day = 1;
+ 170   2          }
+ 171   1          if(my_date.second == 0 && my_date.minute == 0 && my_date.hour == 0 && my_date.day == 1 && my_date.moun
              -th < 12){
- 178   2              my_date.mounth ++;
- 179   2          } else if(my_date.second == 0 && my_date.minute == 0 && my_date.hour == 0 && my_date.day == 1 && my_da
+ 172   2              my_date.mounth ++;
+ 173   2          } else if(my_date.second == 0 && my_date.minute == 0 && my_date.hour == 0 && my_date.day == 1 && my_da
              -te.mounth == 12){
- 180   2              my_date.mounth = 1;
- 181   2          }
- 182   1          if(my_date.second == 0 && my_date.minute == 0 && my_date.hour == 0 && my_date.day == 1 && my_date.moun
+C51 COMPILER V9.59.0.0   MAIN                                                              03/01/2021 22:52:20 PAGE 4   
+
+ 174   2              my_date.mounth = 1;
+ 175   2          }
+ 176   1          if(my_date.second == 0 && my_date.minute == 0 && my_date.hour == 0 && my_date.day == 1 && my_date.moun
              -th == 1){
- 183   2              my_date.year ++;
- 184   2          }
- 185   1          
- 186   1      }
- 187          
- 188          
- 189          
- 190          
- 191          
+ 177   2              my_date.year ++;
+ 178   2          }
+ 179   1          
+ 180   1      }
+ 181          
+ 182          
+ 183          
+ 184          
+ 185          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   1038    ----
+   CODE SIZE        =   1045    ----
    CONSTANT SIZE    =     69    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

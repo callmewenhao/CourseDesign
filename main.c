@@ -5,46 +5,49 @@
 #define uint8_t unsigned char
 #define uint16_t unsigned int 
 
+/* Declare external variables */
 extern struct date my_date;
 extern struct beep_time my_beep_time;
 
+/* BEEP bit*/
 sbit beep = P2^5;
 
-static uint16_t count_times = 0;
-static short int hour_beep_times = 5;
+/* Global variable */
+static uint16_t count_times = 0; // count times for 1 sec
+static short int hour_beep_times = 5; // 整点报时相关
 
 void delay_ms(uint16_t time_ms);
-void Timer0Init(void);		//10毫秒@11.0592MHz
+void Timer1Init(void);
 void UartInit(void);
 void display_now_date(void);
-void change_now_date_time();
-void update_today();
-void tm0_isr() interrupt 1 using 1
+void change_now_date_time(void);
+void update_today(void);
+
+void tm1_interrupt() interrupt 3
 {
-	TL0 = 0x00;		//设置定时初值
-	TH0 = 0xDC;		//设置定时初值
-    if(count_times < 800){
+	TH1 = 0xdc; // 设置定时初值
+    TL1 = 0x00;
+
+    if(count_times < 100){
         count_times ++;
-    } else if(count_times == 800){
+    } else if(count_times == 100){
         count_times = 0;
-        change_now_date_time();
-        //update_today();
-        //led = !led;
+        change_now_date_time(); // 时钟功能
 		 if(my_date.minute == 0 && my_date.second == 0){
-			//整点报时
-			//update_today();
+			// 整点修改星期数
 			if(my_date.which_day == 6)
 			    my_date.which_day = 0;
 			else if(my_date.which_day < 6)
 			    my_date.which_day += 1;
+            // 整点报时
 			my_beep_time.on_the_hour = 1;
 		}
-    }
-    if(my_beep_time.is_beeping == 0){
-        if(my_beep_time.hour == my_date.hour && my_beep_time.minute == my_date.minute && my_date.second == 0 ){
-            //定时
-            my_beep_time.is_beeping = 1;
-        } 
+        if(my_beep_time.is_beeping == 0){
+            if(my_beep_time.hour == my_date.hour && my_beep_time.minute == my_date.minute && my_date.second == 0 ){
+                //定时报时检测
+                my_beep_time.is_beeping = 1;
+            } 
+        }
     }
 }  
 
@@ -53,23 +56,23 @@ void main()
     beep = 1;
     key_init();
     lcd_init();
-	//UartInit();
-    Timer0Init();
+    Timer1Init();
 	printf_str(1, 2, "Welcome!");
 	delay(300);
     lcd_wcmd(0x01); //清除LCD的显示内容
 	
-	ET0 = 1; //enable timer1 interrupt
+	ET1 = 1; //enable timer1 interrupt
     EA = 1; //open global interrupt switch
 
-	//printf_str(0, 2, "当前日期时间");
     while(1)
     {
-        /* 检测是否跳到其他界面 */
+        /* 检测是否跳到菜单界面 */
         menu_list();
 		if(count_times == 0){
             /* 如果日期时间有变就刷新显示， 显示效果更好 */
-			display_now_date();
+			display_now_date(); 
+
+            /* 定时报时响 */
 			if(my_beep_time.is_beeping == 0){
 				/* 不响 */
 				beep = 1;
@@ -79,13 +82,14 @@ void main()
 				beep = 0;
 				//printf_str(3, 2, "wake up!");
 			} 
-            /* 整点报时 */
-            
+
+            /* 整点报时响 */
             if(my_beep_time.on_the_hour == 1){
                 if(hour_beep_times%2 == 1){
                     beep = 1;
                     hour_beep_times --;
                 } else if(hour_beep_times == 0){
+                    /* 停止响 */
                     my_beep_time.on_the_hour = 0;
                     hour_beep_times = 4;
 
@@ -97,26 +101,17 @@ void main()
 		}
     }
 }
-void Uart0Init(void)
-{
-    TH1 = 0xFD;	 //晶振11.0592mhz 波特率设为9600
-    TL1 = TH1;
-    TMOD |= 0x20; //定时器1方式2
-    SCON = 0x50; //串口接收使能
-    ES = 1;	//串口中断使能
-    TR1 = 1; //定时器1使能
-    TI = 1; //发送中断标记位，必须设置
-}
-void Timer0Init(void)		//10毫秒@11.0592MHz
-{
-//	AUXR &= 0xBF;		//定时器时钟12T模式
-	TMOD &= 0xF0;		//设置定时器模式
-	TL0 = 0x00;		//设置定时初值
-	TH0 = 0xDC;		//设置定时初值
-	TF0 = 0;		//清除TF1标志
-	TR0 = 1;		//定时器1开始计时
-//	ET1 = 1;        //enable timer1 interrupt
-//    EA = 1;          //open global interrupt switch
+/* Timer1Init */
+void Timer1Init(void){
+    TMOD = 0x10; // Timer1十六位计数方式
+
+    TH1 = 0xdc; // 设置定时初值
+    TL1 = 0x00;
+
+    TR1 = 1; // 启动定时器
+    // ET1 = 1;
+	// EA = 1;
+
 }
 void display_now_date(void){
 	char str[10] =" ";
@@ -152,7 +147,6 @@ void display_now_date(void){
     printf_str(3, 4, "星期");
     
 }
-
 void change_now_date_time(){
     if(my_date.second < 59){
         my_date.second ++;

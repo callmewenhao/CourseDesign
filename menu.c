@@ -3,33 +3,31 @@
 #include "lcd.h"
 #include "menu.h"
 
-enum my_enum1{
-    UP = 2, //
-    DOWN = 3 //
-};
 
 struct date my_date = {
     /*  
         闰年：是4的倍数而不是100的倍数 或是400的倍数
         闰年2月29天 平年2月28天
      */
-    2021, // 2020为闰年
+    /* 日期 */
+    2021, // 2021为平年
     1,
     29,
-	
+	/* 时间 */
     23,
     59,
     53,
-	
-    0, // is_leap_year = 1
-    31, // 闰年2月29天
-
+	/* 闰年与月天数 */
+    0, // 闰年：is_leap_year = 1
+    31, // 1月31天，平年2月28天，闰年2月29天
+    /* 星期几 */
     5 // 2021-01-29 为周5
-
 };
 struct beep_time my_beep_time = {
+    /* 定时时间 */
 	0,
 	1,
+    
     0, // is_beeping = 0;
     0 //整点:on_the_hour = 1
 };
@@ -47,6 +45,7 @@ void key_init(){
     value_down = 1;
     key_star = 1;
 }
+/* 按键检测 */
 uint8_t key_scan(bit key){
     if (key == 0)
     {
@@ -124,6 +123,7 @@ void set_mounth_days(void){
             break;
     }
 }
+/* 菜单1 */
 void set_date(void){
 	printf_str(0, 0, "修改时间");
     printf_str(1, 0, "年");
@@ -303,6 +303,7 @@ void set_date(void){
 	// ET0 = 1; //enable timer1 interrupt
     // EA = 1; //open global interrupt switch
 }
+/* 菜单2 */
 void beep_time(){
     printf_str(0, 0, "定时设置");
     
@@ -327,7 +328,7 @@ void beep_time(){
                 star_postion = 1;
             printf_str(star_postion, 6, "*");
         }
-        /* 改值 */
+        /* 改定时值 */
         if (key_scan(value_up) == 0){
             switch (star_postion)
             {
@@ -350,7 +351,7 @@ void beep_time(){
                 default:
                     break;
             }
-            /*  */
+            /* 刷新显示 */
             sprintf(str, "%02d", my_beep_time.hour);
             printf_str(1, 5, str);
             sprintf(str, "%02d", my_beep_time.minute);
@@ -377,7 +378,7 @@ void beep_time(){
                 default:
                     break;
             }
-            /*  */
+            /* 刷新显示 */
             sprintf(str, "%02d", my_beep_time.hour);
             printf_str(1, 5, str);
             sprintf(str, "%02d", my_beep_time.minute);
@@ -392,19 +393,20 @@ void beep_time(){
 }
 void menu_list(){
     if(key_scan(key_break) == 0){
-            ET0 = 0;        //enable timer1 interrupt
-			EA = 0;          //open global interrupt switch
+            /* 先停掉定时器和中断 */
+            ET0 = 0;        
+			EA = 0;          
 			lcd_wcmd(0x01);      //清除LCD的显示内容
-            set_date();
+            set_date(); // 进入菜单1 
 			lcd_wcmd(0x01);      //清除LCD的显示内容
             
             /* 定时函数 */
             lcd_wcmd(0x01);      //清除LCD的显示内容
-            beep_time();
+            beep_time(); // 进入菜单2
             lcd_wcmd(0x01);      //清除LCD的显示内容
             //printf_str(0, 2, "当前日期时间");
-			update_today();
-    } else if(key_scan(value_up) == 0){
+			update_today(); // 更新周数
+    } else if(key_scan(value_up) == 0){ //打断定时报时
         /* 第二个按键按下时beep停止 */
         my_beep_time.is_beeping = 0;
     }
@@ -413,14 +415,11 @@ void menu_list(){
 
 /* 更新周几 使用基姆拉尔森计算公式 Week=(d+2*m+3*(m+1)/5+y+y/4-y/100+y/400)%7 */
 void update_today(){
-    /*  */
-   
     if(my_date.mounth == 1 || my_date.mounth == 2){
         my_date.which_day = (my_date.day+2*(my_date.mounth+12)+3*(my_date.mounth+12+1)/5+my_date.year-1+(my_date.year-1)/4-(my_date.year-1)/100+(my_date.year-1)/400+1)%7;
     } else {
         my_date.which_day = (my_date.day+2*my_date.mounth+3*(my_date.mounth+1)/5+my_date.year+my_date.year/4-my_date.year/100+my_date.year/400+1)%7;
     }
-
 }
 
 
